@@ -1,0 +1,25 @@
+{
+  "name": "project1",
+  "version": "1.0.0",
+  "description": "Rich Web app that utilises custom API ",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "test": "echo \"No Tests\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Saiyanprincess11/project-1.git"
+  },
+  "author": "Princess-Osaani Hornage",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/Saiyanprincess11/project-1/issues"
+  },
+  "homepage": "https://github.com/Saiyanprincess11/project-1#readme",
+  "devDependencies": {
+    "eslint": "^8.34.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.27.5"
+  }
+}
