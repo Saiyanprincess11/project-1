@@ -9,8 +9,12 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 //handle POST requests
 const handlePost = (request, response, parsedUrl) => {
   
-  if(parsedUrl.pathname === '/addUser') {
+  /*if(parsedUrl.pathname === '/addUser') {
     parseBody(request, response, jsonHandler.addUser);
+  }*/
+
+  if(parsedUrl.pathname === '/addTask'){
+    parseBody(request, response, jsonHandler.addTask); 
   }
 };
 
@@ -43,8 +47,16 @@ const parseBody = (request, response, handler) => {
 //GET Request Handling 
 const handleGet = (request, response, parsedUrl) => {
 
+  switch(parsedUrl.pathname){
+    case '/style.css': htmlHandler.getCSS(request, response); break; 
+    case '/app.html': htmlHandler.getApp(request, response); break; 
+    case '/getTasks': jsonHandler.getTasks(request, response); break; 
+    case '/notReal': jsonHandler.notReal(request, response); break; 
+    default: htmlHandler.getIndex(request, response);break;
+  }
+
   //Based on URL, picks handler 
-  if (parsedUrl.pathname === '/style.css') {
+  /*if (parsedUrl.pathname === '/style.css') {
     htmlHandler.getCSS(request, response);
   }else if(parsedUrl.pathname === '/app.html'){
     htmlHandler.getApp(request, response); 
@@ -54,7 +66,7 @@ const handleGet = (request, response, parsedUrl) => {
     jsonHandler.notReal(request, response); 
   } else {
     htmlHandler.getIndex(request, response);
-  }
+  }*/
 };
 
 const onRequest = (request, response) => {
@@ -68,7 +80,6 @@ const onRequest = (request, response) => {
     handleGet(request, response, parsedUrl);
   }
 };
-
 
 //Starts server
 http.createServer(onRequest).listen(port, () => {

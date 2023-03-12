@@ -1,4 +1,5 @@
 const users = {};
+const tasks = {}; 
 
 //Responds with a json object
 const respondJSON = (request, response, status, object) => {
@@ -19,6 +20,15 @@ const getUsers = (request, response) => {
   };
 
   respondJSON(request, response, 200, responseJSON);
+};
+
+//Returns task object as JSON 
+const getTasks = (request, response) => {
+  const responseJSON = {
+    tasks,
+  }; 
+
+  respondJSON(request, response, 200, responseJSON); 
 };
 
 //Adds a user from a POST body
@@ -57,6 +67,44 @@ const addUser = (request, response, body) => {
   return respondJSONMeta(request, response, responseCode);
 };
 
+//Adds task from POST body 
+const addTask = (request, response, body) => {
+  const responseJSON = {
+    message: 'Title, description, category, and points are required', 
+  };
+
+  //Checks to make sure all fields present 
+  if(!body.title || !body.description || !body.category || !body.points){
+    responseJSON.id = 'missingParams'; 
+    return respondJSON(request, response, 400, responseJSON); 
+  }
+
+  //Defaults to 204
+  let responseCode = 204; 
+
+  //Checks to see if task doesnt exist yet 
+  if(!tasks[body.title]) {
+    responseCode = 201; 
+    tasks[body.title] = {}; 
+  }
+
+  //Adds or updates task fields 
+  tasks[body.status].status = body.status; //locked/unlocked
+  tasks[body.title].title = body.title; 
+  tasks[body.description].description = body.description; 
+  tasks[body.category].category = body.category; 
+  tasks[body.points].points = body.points; 
+
+  //Sends created successfully response code 
+  if(responseCode === 201){
+    responseJSON.message = 'Created Task Successfully'; 
+    return respondJSON(request, response, responseCode, responseJSON); 
+  }
+  
+  return respondJSONMeta(request, response, responseCode); 
+
+};
+
 //404: Not found 
 const notFound = (request, response) => {
     const responseJSON = {
@@ -93,4 +141,6 @@ module.exports = {
   notReal, 
   notRealMeta,
   notFoundMeta, 
+  addTask, 
+  getTasks,
 };

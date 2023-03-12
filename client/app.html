@@ -11,28 +11,29 @@
     const unlockedAchievements = {}; 
 
    const handleResponse = async (response, parseResponse) => {
-      
-      const content = document.querySelector('#content');
 
       //Displays tag based on status code 
       switch(response.status) {
         case 200: //Success
-          content.innerHTML = `<b>Success</b>`;
+        console.log('Success');
           break;
         case 201: //Created
-          content.innerHTML = '<b>Created</b>';
+          console.log('Created');
+
           break;
         case 204: //Updated (no response back from server)
-          content.innerHTML = '<b>Updated (No Content)</b>';
+          console.log('Updated (No Content)');
+
           return;
         case 404: //Not Found
-          content.innerHTML = `<b>Not Found</b>`;
+          console.log('Not Found');
+
         break;
         case 400: //Bad request
-          content.innerHTML = `<b>Bad Request</b>`;
+          console.log('Bad Request');
           break;
         default: //any other status code
-          content.innerHTML = `Error code not implemented by client.`;
+          console.log('Error code not implemented by client');
         break;
       }
 
@@ -40,29 +41,40 @@
       let obj = await response.json();
       if(parseResponse && obj.id !== 'notReal'){
         let jsonString = JSON.stringify(obj);
-        content.innerHTML += `<p>${jsonString}</p>`;
+        console.log(jsonString);
       }
       
       //Displays message
       if(obj.message){
-        content.innerHTML += `<p>Message: ${obj.message}</p>`;
+        console.log(`Message: ${obj.message}`);
       }
     };
 
     //Uses fetch to send a postRequest
-    const sendPost = async (nameForm) => {
-      const nameAction = nameForm.getAttribute('action');
-      const nameMethod = nameForm.getAttribute('method');
-      //Add fields from forms
-      const nameField = nameForm.querySelector('#nameField');
-      const ageField = nameForm.querySelector('#ageField');
+    const sendPost = async (achievementForm) => {
+      //const nameAction = nameForm.getAttribute('action');
+      //const nameMethod = nameForm.getAttribute('method');
+      //const nameField = nameForm.querySelector('#nameField');
+      //const ageField = nameForm.querySelector('#ageField');
+      //Get action and method type 
+      const achievementAction = achievementForm.getAttribute('action'); 
+      const achievementMethod = achievementForm.getAttribute('method');
+
+      //Get form field values 
+      const titleField = achievementForm.querySelector('#titleField'); 
+      const descriptionField = achievementForm.querySelector('#descriptionField') //add .value to get user input
+      const categoryField = achievementForm.querySelector('input[name="category"]:checked');
+      const pointsField = achievementForm.querySelector('points-field'); 
 
       //Build a data string in the FORM-URLENCODED format.
-      const formData = `name=${nameField.value}&age=${ageField.value}`;
+      //const formData = `name=${nameField.value}&age=${ageField.value}`;
+      const formData = `
+      title=${titleField.value}&description=${descriptionField.value}&category=${categoryField}&points=${pointsField}&status=locked
+      `;
 
       //Make a fetch request and await a response
-      let response = await fetch(nameAction, {
-        method: nameMethod,
+      let response = await fetch(achievementAction, {
+        method: achievementMethod,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json',
@@ -73,10 +85,11 @@
       handleResponse(response);
     };
 
-    const requestUpdate = async (userForm) => {
+    const requestUpdate = async (achievementForm) => {
       
-      const url = userForm.querySelector('#urlField').value;
-      const method = userForm.querySelector('#methodSelect').value;
+      //Awaits fetch response
+      const url = '/getTasks';
+      const method = 'get';
       
       //Awaits fetch response
       let response = await fetch(url, {
@@ -130,7 +143,7 @@
       //Add code... 
 
       //Otherwise prints default message 
-      if(content.innerHTML.trim() == ""){
+      if(Object.keys(lockedAchievements).length === 0){
         content.innerHTML = `
         <p class="has-text-white is-centered has-text-centered" id="achievements-content-tag">
           No Locked Achievements Yet<br>Click the <strong>Add</strong> button to create a new goal!
@@ -156,7 +169,7 @@
       //Add code... 
 
       //Otherwise prints default message 
-      if(content.innerHTML.trim() == ""){
+      if(Object.keys(unlockedAchievements).length === 0){
         content.innerHTML = `
         <p class="has-text-white is-centered has-text-centered" id="achievements-content-tag">
           No Unlocked Achievements Yet<br>Click the <strong>Add</strong> button to create a new goal!
@@ -165,11 +178,12 @@
     }
     //Runs on page load 
     const init = () => {
-      const nameForm = document.querySelector('#nameForm');
-      const userForm = document.querySelector('#userForm');
+      //const nameForm = document.querySelector('#nameForm');
+      //const userForm = document.querySelector('#userForm');
+      const achievementForm = document.querySelector('#achievementForm'); 
       
       //Cancels the forms default action and calls sendPost
-      const addUser = (e) => {
+      /*const addUser = (e) => {
         e.preventDefault();
         sendPost(nameForm);
         return false;
@@ -179,17 +193,28 @@
         e.preventDefault();
         requestUpdate(userForm);
         return false;
+      }*/
+
+      const addTask = (e) => {
+        e.preventDefault(); 
+        sendPost(achievementForm);
+        return false; 
       }
 
+      const getTasks = (e) => {
+        e.preventDefault();
+        requestUpdate(achievementForm);
+        return false;
+      }
 
       //Prints default message if achievements has no content
       printDefault(); 
-       
-     
       
       //Call addUser when the submit event fires on the form.
-      nameForm.addEventListener('submit', addUser);
-      userForm.addEventListener('submit', getUsers);
+      //nameForm.addEventListener('submit', addUser);
+      //userForm.addEventListener('submit', getUsers);
+      achievementForm.addEventListener('click', addTask);
+      achievementForm.addEventListener('click', getTasks);
     };
     
 
@@ -203,7 +228,6 @@
 
       //Retrieves list of achievements 
       //Add code..
-
 
       //Creates new achievement 
 
@@ -231,10 +255,10 @@
       </div>
       `; 
 
+      //Hides add achievement form 
       if(form.style.display !== "none"){
         form.style.display = "none"; 
       }
-
     };
 
     //When the window loads, run init.
@@ -307,96 +331,103 @@
     <div class="column is-centered">
       <div class="content is-centered" id="add-task-form">
         <div class="box" style="width: 800px;">
-          <label class="label has-text-centered">
-            <span class="icon">
-              <i class="fa fa-trophy"></i>
-            </span>
-            New Achievement 
-          </label>
-          <div class="field">
-            <label class="label">Title</label>
-            <div class="control">
-              <input class="input" type="text" placeholder="100 chars max" value="">
-            </div>
-          </div>
-          <div class="field">
-            <label class="label">Description</label>
-            <div class="control">
-              <textarea class="textarea" placeholder="Textarea"></textarea>
-            </div>
-          </div>
-          
-          <!--Category Select-->
-          <div class="field">
-            <label class="label">Category</label>
-            <div class="field">
+          <form action="/addAchievement" id="achievementForm" method="post">
+            <!--Header-->
+            <label class="label has-text-centered">
+              <span class="icon">
+                <i class="fa fa-trophy"></i>
+              </span>
+              New Achievement 
+            </label>
+
+            <!--Pick Title-->
+            <div class="field" id="titleField">
+              <label class="label">Title</label>
               <div class="control">
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    Adventure
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    Personal Goal
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    Strength
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    Problem Solving
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    Personal Health
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    Pet Care
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    Work
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    Travel
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    School
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="question">
-                    Family Care
-                  </label>
+                <input class="input" type="text" placeholder="100 chars max" value="">
               </div>
             </div>
-            <!-- <p class="help is-success">This username is available</p>-->
-          </div>
-          
-          <!--Points Selector-->
-          <div class="field">
-                <label class="label">Points</label>
-                <div class="control has-icons-left has-icons-right">
-                  <input class="input" type="number" id="tentacles" name="tentacles"
-                  min="1" max="1000000" style="width: fit-content;">
-                </div>
-          </div>
+
+            <!--Write Description-->
+            <div class="field">
+              <label class="label">Description</label>
+              <div class="control">
+                <textarea id="descriptionField" class="textarea" placeholder="Textarea"></textarea>
+              </div>
+            </div>
             
-          
-          <div class="field is-grouped mt-5">
-            <div class="control">
-              <button class="button is-link" onclick="newAchievement()">Add Achievement</button>
+            <!--Category Select-->
+            <div class="field">
+              <label class="label">Category</label>
+              <div class="field">
+                <div class="control">
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      Adventure
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      Personal Goal
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      Strength
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      Problem Solving
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      Personal Health
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      Pet Care
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      Work
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      Travel
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      School
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="question">
+                      Family Care
+                    </label>
+                </div>
+              </div>
+              <!-- <p class="help is-success">This username is available</p>-->
             </div>
-            <div class="control">
-              <button class="button is-link is-light" onclick="cancel()">Cancel</button>
+            
+            <!--Points Selector-->
+            <div class="field">
+                  <label class="label">Points</label>
+                  <div class="control has-icons-left has-icons-right">
+                    <input class="input" type="number" id="points-field" name="points"
+                    min="1" max="1000000" style="width: fit-content;">
+                  </div>
             </div>
-            <div class="control">
-              <button class="button is-danger" type="reset">Reset</button>
+              
+            <!--Form Buttons-->
+            <div class="field is-grouped mt-5">
+              <div class="control">
+                <button class="button is-link">Add Achievement</button>
+              </div>
+              <div class="control">
+                <button class="button is-link is-light" onclick="cancel()">Cancel</button>
+              </div>
+              <div class="control">
+                <button class="button is-danger" type="reset">Reset</button>
+              </div>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </div>
